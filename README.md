@@ -20,7 +20,7 @@ This use case ingests data changes made in the MySQL database into a Hazelcast c
 
 ## Required Software
 
-- PadoGrid 0.9.3-SNAPSHOT+ (08/05/2020)
+- PadoGrid 0.9.3-SNAPSHOT+ (08/10/2020)
 - Docker
 - Docker Compose
 - Maven 3.x
@@ -171,9 +171,11 @@ cd_docker debezium_ksql_kafka; cd bin_sh
 
 ### 3. Ingest mock data into the `nw.customers` and `nw.orders` tables in MySQL
 
+Note that if you run the following more than once then you may see multiple customers sharing the same customer ID when you execute KSQL queries on streams since the streams kepp all the CDC records. The database (MySQL), on the other hand, will always have a single customer per customer ID.
+
 ```bash
 cd_app perf_test_ksql; cd bin_sh
-./test_group -run -db -prop ../etc/group-factory.properties
+./test_group -run -db -prop ../etc/group-factory-er.properties
 ```
 
 ### 4. Run KSQL CLI
@@ -214,8 +216,8 @@ CREATE STREAM orders WITH (KAFKA_TOPIC='ORDERS_REPART',VALUE_FORMAT='json',PARTI
 CREATE STREAM customers_stream WITH (KAFKA_TOPIC='CUSTOMERS_REPART',VALUE_FORMAT='json',PARTITIONS=1) as SELECT * FROM customers_from_debezium PARTITION BY customerid;
 
 -- Compare results: original vs. repartitioned
-SELECT * FROM orders_from_debezium LIMIT 1;
-SELECT * FROM orders LIMIT 1;
+SELECT * FROM orders_from_debezium EMIT CHANGES LIMIT 1;
+SELECT * FROM orders EMIT CHANGES LIMIT 1;
 ```
 
 Join customers and orders
@@ -225,7 +227,7 @@ Join customers and orders
 CREATE TABLE customers (customerid string, contactname string, companyname string) WITH (KAFKA_TOPIC='CUSTOMERS_REPART',VALUE_FORMAT='json',KEY='customerid');
 
 -- Make a join between customer and its orders and create a query that monitors incoming orders
-SELECT orderid,freight,customers.customerid,customers.contactname,customers.companyname FROM orders left join customers on orders.orderid=customers.customerid;
+SELECT customers.customerid,orderid,TIMESTAMPTOSTRING(orderdate, 'yyyy-MM-dd HH:mm:ss'),customers.contactname,customers.companyname,freight FROM orders left join customers on orders.customerid=customers.customerid EMIT CHANGES;
 ```
 
 ### Watch topics
@@ -261,6 +263,23 @@ The last command should display the connectors that we registered previously.
   "customers-sink",
   "orders-sink"
 ]
+```
+
+### Drop KSQL Statements
+
+The following scripts are provided to drop KSQL queries using the KSQL REST API.
+
+```
+cd_app perf_test_ksql; cd bin_sh
+
+# Drop all queries
+./ksql_drop_all_queries
+
+# Drop all streams
+./ksql_drop_all_streams
+
+# Drop all tables
+./ksql_drop_all_tables
 ```
 
 ### View Map Contents
