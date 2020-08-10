@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
+. $SCRIPT_DIR/.addonenv.sh
+
+EXECUTABLE="`basename $0`"
+
+if [ "$HELP" == "true" ]; then
+   echo "Usage:"
+   echo "   ./$EXECUTABLE [-clean] [-?]"
+   echo ""
+   echo "   Copies the hazelcast jar files to the 'padogrid' directory which is mounted"
+   echo "   by the Docker Hazelcast connector container."
+   echo ""
+   echo "Default: ./$EXECUTABLE"
+   echo ""
+   exit
+fi
+
+pushd $APP_DIR > /dev/null
+
+# Change Hazelcast version number in pom.xml and hazelcast-client.xml
+if [ $HAZELCAST_MAJOR_VERSION_NUMBER -lt 4 ]; then
+   VERSION_NUMBER="3.12"
+else
+   VERSION_NUMBER="4.0"
+fi
+# SED backup prefix
+if [[ ${OS_NAME} == DARWIN* ]]; then
+   # Mac - space required
+   __SED_BACKUP=" 0"
+else
+   __SED_BACKUP="0"
+fi
+sed -i${__SED_BACKUP} 's/hazelcast-client-config-.*.xsd/hazelcast-client-config-'${VERSION_NUMBER}'.xsd/' padogrid/etc/hazelcast-client.xml
+
+# Copy the hazelcast and hazelcast-addon jar files
+if [ ! -d padogrid/lib ]; then
+   mkdir -p padogrid/lib
+fi
+if [ ! -d padogrid/plugins ]; then
+   mkdir -p padogrid/plugins
+fi
+if [ ! -d padogrid/log ]; then
+   mkdir -p padogrid/log
+fi
+if [ ! -d padogrid/etc ]; then
+   mkdir -p padogrid/etc
+fi
+
+cp $HAZELCAST_HOME/lib/hazelcast-*all-*.jar padogrid/lib/
+cp $PADOGRID_HOME/hazelcast/lib/hazelcast-addon-common*.jar padogrid/lib/
+cp $PADOGRID_HOME/hazelcast/lib/v$HAZELCAST_MAJOR_VERSION_NUMBER/hazelcast-addon-core*.jar padogrid/lib/
+cp $PADOGRID_HOME/hazelcast/plugins/v$HAZELCAST_MAJOR_VERSION_NUMBER/hazelcast-addon-core*.jar padogrid/plugins/
+
+popd > /dev/null
+
+#
+# Display build information
+#
+echo ""
+echo "Workspace: $PADOGRID_WORKSPACE"
+echo ""
+echo "Build complete"
+echo ""
