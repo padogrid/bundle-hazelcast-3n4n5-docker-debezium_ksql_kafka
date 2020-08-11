@@ -68,26 +68,26 @@ padogrid
 
 Let's create a Hazelcast cluster to run on Docker containers as follows.
 
-```console
+```bash
 create_docker -cluster hazelcast -host host.docker.internal
 cd_docker hazelcast
 ```
 
 If you are running Docker Desktop, then the host name, `host.docker.internal`, is accessible from the containers as well as the host machine. You can run the `ping` command to check the host name.
 
-```console
+```bash
 ping host.docker.internal
 ```
 
 If `host.docker.internal` is not defined then you will need to use the host IP address that can be accessed from both the Docker containers and the host machine. Run `create_docker -?` or `man create_docker` to see the usage.
 
-```console
+```bash
 create_docker -?
 ```
 
 If you are using a host IP other than `host.docker.internal` then you must also make the change in the Debezium Hazelcast connector configuration file as follows.
 
-```console
+```bash
 cd_docker debezium_ksql_kafka
 vi padogrid/etc/hazelcast-client.xml
 ```
@@ -105,6 +105,21 @@ Replace `host.docker.internal` in `hazelcast-client.xml` with your host IP addre
    </network>
    ...
 </hazelcast-client>
+```
+
+If you will be running the Desktop app then you also need to register the `org.hazelcast.demo.nw.data.PortableFactoryImpl` class in the Hazelcast cluster. The `Customer` and `Order` classes implement the `VersionedPortable` interface.
+
+```bash
+cd_docker hazelcast
+vi padogrid/etc/hazelcast.xml
+```
+
+Add the following in the `hazelcast.xml` file.
+
+```xml
+                        <portable-factory factory-id="1">
+                        org.hazelcast.demo.nw.data.PortableFactoryImpl
+                        </portable-factory>
 ```
 
 ## Creating `perf_test` app
@@ -214,10 +229,53 @@ CREATE STREAM orders WITH (KAFKA_TOPIC='ORDERS_REPART',VALUE_FORMAT='json',PARTI
 
 -- customers_stream
 CREATE STREAM customers_stream WITH (KAFKA_TOPIC='CUSTOMERS_REPART',VALUE_FORMAT='json',PARTITIONS=1) as SELECT * FROM customers_from_debezium PARTITION BY customerid;
+```
 
--- Compare results: original vs. repartitioned
+**Compare results: original vs. repartitioned**
+
+Original Query:
+
+```sql
 SELECT * FROM orders_from_debezium EMIT CHANGES LIMIT 1;
+```
+
+Output:
+
+```console
++--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+
+|ROWTIME |ROWKEY  |ORDERID |CUSTOMER|EMPLOYEE|FREIGHT |ORDERDAT|REQUIRED|SHIPADDR|SHIPCITY|SHIPTCOU|SHIPNAME|SHIPPOST|SHIPREGI|SHIPVIA |SHIPPEDD|
+|        |        |        |ID      |ID      |        |E       |DATE    |ESS     |        |NTRY    |        |CAL     |ON      |        |ATE     |
++--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+
+|15971609|{"orderI|k0000000|000000-0|575585+2|40.25865|15969522|15975697|365 Osca|New Laur|null    |Terry, K|null    |FL      |1       |15971208|
+|01582   |d":"k000|066     |012     |624     |43354865|01000   |06000   |r Cove, |ence    |        |ohler an|        |        |        |45000   |
+|        |0000066"|        |        |        |4       |        |        |Lawrence|        |        |d Bernie|        |        |        |        |
+|        |}       |        |        |        |        |        |        |ville, R|        |        |r       |        |        |        |        |
+|        |        |        |        |        |        |        |        |I 64139 |        |        |        |        |        |        |        |
+Limit Reached
+Query terminated
+```
+
+Repartitioned Query:
+
+
+```sql
 SELECT * FROM orders EMIT CHANGES LIMIT 1;
+```
+
+Output:
+
+```console
++--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+
+|ROWTIME |ROWKEY  |ORDERID |CUSTOMER|EMPLOYEE|FREIGHT |ORDERDAT|REQUIRED|SHIPADDR|SHIPCITY|SHIPTCOU|SHIPNAME|SHIPPOST|SHIPREGI|SHIPVIA |SHIPPEDD|
+|        |        |        |ID      |ID      |        |E       |DATE    |ESS     |        |NTRY    |        |CAL     |ON      |        |ATE     |
++--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+
+|15971609|k0000000|k0000000|000000-0|575585+2|40.25865|15969522|15975697|365 Osca|New Laur|null    |Terry, K|null    |FL      |1       |15971208|
+|01582   |066     |066     |012     |624     |43354865|01000   |06000   |r Cove, |ence    |        |ohler an|        |        |        |45000   |
+|        |        |        |        |        |4       |        |        |Lawrence|        |        |d Bernie|        |        |        |        |
+|        |        |        |        |        |        |        |        |ville, R|        |        |r       |        |        |        |        |
+|        |        |        |        |        |        |        |        |I 64139 |        |        |        |        |        |        |        |
+Limit Reached
+Query terminated
 ```
 
 Join customers and orders
@@ -228,6 +286,22 @@ CREATE TABLE customers (customerid string, contactname string, companyname strin
 
 -- Make a join between customer and its orders and create a query that monitors incoming orders
 SELECT customers.customerid,orderid,TIMESTAMPTOSTRING(orderdate, 'yyyy-MM-dd HH:mm:ss'),customers.contactname,customers.companyname,freight FROM orders left join customers on orders.customerid=customers.customerid EMIT CHANGES;
+```
+
+Output:
+
+```console
++--------------------------+--------------------------+--------------------------+--------------------------+--------------------------+--------------------------+
+|CUSTOMERS_CUSTOMERID      |ORDERID                   |KSQL_COL_2                |CONTACTNAME               |COMPANYNAME               |FREIGHT                   |
++--------------------------+--------------------------+--------------------------+--------------------------+--------------------------+--------------------------+
+|000000-0012               |k0000000066               |2020-08-09 05:50:01       |Pacocha                   |MacGyver Group            |40.25865433548654         |
+|000000-0048               |k0000000246               |2020-08-07 04:15:10       |Wiegand                   |Kuhic-Bode                |157.48781188841855        |
+|000000-0072               |k0000000366               |2020-08-08 21:53:28       |Pfannerstill              |Weimann, Hills and Schmitt|79.03684813199516         |
+|000000-0024               |k0000000126               |2020-08-05 05:35:38       |Torphy                    |Bednar LLC                |55.94516435026855         |
+|000000-0084               |k0000000426               |2020-08-05 22:09:37       |Nolan                     |Quigley Group             |10.966276834050536        |
+|000000-0000               |k0000000006               |2020-08-06 02:02:29       |Fadel                     |Miller-Abbott             |12.769565213351175        |
+|000000-0048               |k0000000247               |2020-08-07 13:23:20       |Wiegand                   |Kuhic-Bode                |60.65402769673416         |
+...
 ```
 
 ### Watch topics
@@ -305,22 +379,22 @@ cd_app perf_test_ksql; cd bin_sh
 
 ### Desktop
 
-You can also install the desktop app, browse and query the map contents. The build_app script configures and deploys all the necessary files for this demo.
+You can also install the desktop app, browse and query the map contents. The `build_app` script configures and deploys all the necessary files for this demo.
 
 ```console
 create_app -app desktop
-cd_app desktop; bin_sh
+cd_app desktop; cd bin_sh
 ./build_app
 ```
 
-Run the desktop.
+Run the desktop and login with your user ID and the default locator of `localhost:5701`. Password is not required.
 
 ```console
-cd bin_sh
+cd_app desktop; cd hazelcast-desktop_0.1.7/bin_sh
 ./desktop
 ```
 
-![Desktop Screenshot](/images/desktop-inventory-customers.png)
+![Desktop Screenshot](/images/desktop-nw-orders.jpg)
 
 ## References
 
