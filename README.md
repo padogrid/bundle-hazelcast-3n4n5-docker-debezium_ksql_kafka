@@ -6,7 +6,7 @@ This bundle integrates Hazelcast with Debezium and Confluent KSQL for ingesting 
 
 This bundle supports Hazelcast 3.12.x and 4.0.
 
-```console
+```bash
 install_bundle -download bundle-hazelcast-3n4-docker-debezium_ksql_kafka
 ```
 
@@ -39,14 +39,14 @@ This demo has been put together based on the following blog from Debezium:
 
 We must first build the demo by running the `build_app` command as shown below. This command copies the Hazelcast and `hazelcast-addon-core` jar files to the Docker container mounted volume in the `padogrid` directory so that the Hazelcast Debezium Kafka connector can include them in its class path. It also downloads the ksql JDBC driver jar and its dependencies in the `padogrid/lib/jdbc` directory.
 
-```console
+```bash
 cd_docker debezium_ksql_kafka; cd bin_sh
 ./build_app
 ```
 
 Upon successful build, the `padogrid` directory should have jar files similar to the following:
 
-```console
+```bash
 cd_docker debezium_ksql_kafka
 tree padogrid
 ```
@@ -321,7 +321,7 @@ cd_docker debezium_ksql_kafka; cd bin_sh
 
 ### Check Kafka Connect
 
-```console
+```bash
 # Check status
 curl -Ss -H "Accept:application/json" localhost:8083/ | jq
 
@@ -360,7 +360,7 @@ cd_app perf_test_ksql; cd bin_sh
 
 To view the map contents, run the `read_cache` command as follows:
 
-```console
+```bash
 cd_app perf_test_ksql; cd bin_sh
 ./read_cache nw/customers
 ./read_cache nw/orders
@@ -381,7 +381,7 @@ cd_app perf_test_ksql; cd bin_sh
 
 You can also install the desktop app, browse and query the map contents. The `build_app` script configures and deploys all the necessary files for this demo.
 
-```console
+```bash
 create_app -app desktop
 cd_app desktop; cd bin_sh
 ./build_app
@@ -389,7 +389,7 @@ cd_app desktop; cd bin_sh
 
 Run the desktop and login with your user ID and the default locator of `localhost:5701`. Password is not required.
 
-```console
+```bash
 cd_app desktop; cd hazelcast-desktop_0.1.7/bin_sh
 ./desktop
 ```
