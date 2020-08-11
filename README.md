@@ -390,7 +390,7 @@ cd_app desktop; cd bin_sh
 Run the desktop and login with your user ID and the default locator of `localhost:5701`. Password is not required.
 
 ```bash
-cd_app desktop; cd hazelcast-desktop_0.1.7/bin_sh
+cd_app desktop; cd hazelcast-desktop_<version>/bin_sh
 ./desktop
 ```
 
