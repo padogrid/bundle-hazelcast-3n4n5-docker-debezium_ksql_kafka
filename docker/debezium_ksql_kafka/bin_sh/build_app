@@ -24,14 +24,9 @@ if [ $HAZELCAST_MAJOR_VERSION_NUMBER -lt 4 ]; then
 else
    VERSION_NUMBER="4.0"
 fi
-# SED backup prefix
-if [[ ${OS_NAME} == DARWIN* ]]; then
-   # Mac - space required
-   __SED_BACKUP=" 0"
-else
-   __SED_BACKUP="0"
-fi
-sed -i${__SED_BACKUP} 's/hazelcast-client-config-.*.xsd/hazelcast-client-config-'${VERSION_NUMBER}'.xsd/' padogrid/etc/hazelcast-client.xml
+
+# Place hazelcast-client.xml with the correct version
+cp  padogrid/etc/hazelcast-client-${HAZELCAST_MAJOR_VERSION_NUMBER}.xml padogrid/etc/hazelcast-client.xml
 
 # Copy the hazelcast and hazelcast-addon jar files
 if [ ! -d padogrid/lib ]; then
