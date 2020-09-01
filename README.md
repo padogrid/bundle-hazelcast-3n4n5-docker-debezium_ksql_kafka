@@ -54,14 +54,16 @@ tree padogrid
 ```console
 padogrid
 ├── etc
+│   ├── hazelcast-client-3.xml
+│   ├── hazelcast-client-4.xml
 │   └── hazelcast-client.xml
 ├── lib
 │   ├── hazelcast-addon-common-0.9.3-SNAPSHOT.jar
-│   ├── hazelcast-addon-core-4-0.9.3-SNAPSHOT.jar
-│   └── hazelcast-enterprise-all-4.0.1.jar
+│   ├── hazelcast-addon-core-3-0.9.3-SNAPSHOT.jar
+│   └── hazelcast-enterprise-all-3.12.9.jar
 ├── log
 └── plugins
-    └── hazelcast-addon-core-4-0.9.3-SNAPSHOT-tests.jar
+    └── hazelcast-addon-core-3-0.9.3-SNAPSHOT-tests.jar
 ```
 
 ## Creating Hazelcast Docker Containers
@@ -395,6 +397,18 @@ cd_app desktop; cd hazelcast-desktop_<version>/bin_sh
 ```
 
 ![Desktop Screenshot](/images/desktop-nw-orders.jpg)
+
+## Teardown
+
+```bash
+# Stop KSQL and Kafka containers
+cd_docker debezium_ksql_kafka
+docker-compose down
+
+# Stop Hazelcast containers
+cd_docker hazelcast
+docker-compose down
+```
 
 ## References
 
