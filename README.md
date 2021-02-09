@@ -16,7 +16,7 @@ install_bundle -download bundle-hazelcast-3n4-docker-debezium_ksql_kafka
 
 This use case ingests data changes made in the MySQL database into a Hazelcast cluster via Kafka connectors and also integrates Confluent KSQL for querying Kafka topics as external tables and views. It extends [the original Debezium-Kafka bundle](https://github.com/padogrid/bundle-hazelcast-3n4-docker-debezium_kafka) with Docker compose, Confluent KSQL, and  the North Wind mock data for `customers` and `orders` tables. It includes the MySQL source connector and the `hazelcast-addon` Debezium sink connectors.
 
-![Debezium-Ksql-Kafka Diagram](/images/debezium-ksql-kafka.jpg)
+![Debezium-Ksql-Kafka Diagram](images/debezium-ksql-kafka.jpg)
 
 ## Required Software
 
@@ -396,7 +396,7 @@ cd_app desktop; cd hazelcast-desktop_<version>/bin_sh
 ./desktop
 ```
 
-![Desktop Screenshot](/images/desktop-nw-orders.jpg)
+![Desktop Screenshot](images/desktop-nw-orders.jpg)
 
 ## Teardown
 
