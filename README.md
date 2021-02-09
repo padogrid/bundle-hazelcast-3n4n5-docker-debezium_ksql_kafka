@@ -1,4 +1,4 @@
-# Debezium-Hive-Kafka Hazelcast Connector
+# Debezium-KSQL-Kafka Hazelcast Connector
 
 This bundle integrates Hazelcast with Debezium and Confluent KSQL for ingesting initial data and CDC records from MySQL into a Hazelcast cluster via a Kafka sink connector included in the `padogrid` distribution. It supports inserts, updates and deletes.
 
@@ -14,7 +14,7 @@ install_bundle -download bundle-hazelcast-3n4-docker-debezium_ksql_kafka
 
 ## Use Case
 
-This use case ingests data changes made in the MySQL database into a Hazelcast cluster via Kafka connectors and also integrates Apache Hive for querying Kafka topics as external tables and views. It extends [the original Debezium-Kafka bundle](https://github.com/padogrid/bundle-hazelcast-3n4-docker-debezium_kafka) with Docker compose, Apache Hive, and  the North Wind mock data for `customers` and `orders` tables. It includes the MySQL source connector and the `hazelcast-addon` Debezium sink connectors.
+This use case ingests data changes made in the MySQL database into a Hazelcast cluster via Kafka connectors and also integrates Confluent KSQL for querying Kafka topics as external tables and views. It extends [the original Debezium-Kafka bundle](https://github.com/padogrid/bundle-hazelcast-3n4-docker-debezium_kafka) with Docker compose, Confluent KSQL, and  the North Wind mock data for `customers` and `orders` tables. It includes the MySQL source connector and the `hazelcast-addon` Debezium sink connectors.
 
 ![Debezium-Ksql-Kafka Diagram](/images/debezium-ksql-kafka.jpg)
 
@@ -159,7 +159,7 @@ docker-compose up
 
 ### 2. Start Debezium
 
-Start Zookeeper, Kafka, MySQL, Kafka Connect, Apache Hive containers:
+Start Zookeeper, Kafka, MySQL, Kafka Connect, Confluent KSQL containers:
 
 ```bash
 cd_docker debezium_ksql_kafka
