@@ -10,6 +10,19 @@ buildNumber.properties
 # https://github.com/takari/maven-wrapper#usage-without-binary-jar
 .mvn/wrapper/maven-wrapper.jar
 
+# vi
+*.swp
+
+# Eclipse
+.settings
+.project
+
+# Jupyter
+.ipynb*
+
+# VSCode
+workspace.code-workspace
+
 # PadoGrid
 .addonenv.sh
 initenv.sh
@@ -22,6 +35,8 @@ k8s
 lib
 plugins
 pods
+.workspace
+.cluster
 
 # App specifics
 archive
@@ -32,3 +47,4 @@ setenv.sh0
 build
 pado_*
 docker/hazelcast
+*.xml0

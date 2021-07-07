@@ -188,7 +188,7 @@ cd_docker debezium_ksql_kafka; cd bin_sh
 
 ### 3. Ingest mock data into the `nw.customers` and `nw.orders` tables in MySQL
 
-Note that if you run the following more than once then you may see multiple customers sharing the same customer ID when you execute KSQL queries on streams since the streams kepp all the CDC records. The database (MySQL), on the other hand, will always have a single customer per customer ID.
+Note that if you run the following more than once then you may see multiple customers sharing the same customer ID when you execute KSQL queries on streams since the streams keep all the CDC records. The database (MySQL), on the other hand, will always have a single customer per customer ID.
 
 ```bash
 cd_app perf_test_ksql; cd bin_sh
