@@ -4,7 +4,7 @@ This bundle integrates Hazelcast with Debezium and Confluent KSQL for ingesting 
 
 ## Installing Bundle
 
-This bundle supports Hazelcast 3.12.x and 4.0.
+This bundle supports Hazelcast 3.12.x and 4.x.x.
 
 ```bash
 install_bundle -download bundle-hazelcast-3n4-docker-debezium_ksql_kafka
