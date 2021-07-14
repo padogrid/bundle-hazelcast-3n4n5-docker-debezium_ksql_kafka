@@ -4,5 +4,18 @@ SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
 
 EXECUTABLE="`basename $0`"
 
+if [ "$HELP" == "true" ]; then
+   echo "SYNOPSIS"
+   echo "   ./$EXECUTABLE [-?]"
+   echo ""
+   echo "DESCRIPTION"
+   echo "   Deletes the customers table Kafka sink connector"
+   echo ""
+   echo "DEFAULT"
+   echo "   ./$EXECUTABLE"
+   echo ""
+   exit
+fi
+
 CONNECT_URL=http://localhost:8083/connectors
 curl -X DELETE $CONNECT_URL/customers-sink

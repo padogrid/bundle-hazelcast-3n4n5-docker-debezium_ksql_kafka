@@ -4,4 +4,17 @@ SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
 
 EXECUTABLE="`basename $0`"
 
+if [ "$HELP" == "true" ]; then
+   echo "SYNOPSIS"
+   echo "   ./$EXECUTABLE [-?]"
+   echo ""
+   echo "DESCRIPTION"
+   echo "   Registers the orders table Kafka sink connector"
+   echo ""
+   echo "DEFAULT"
+   echo "   ./$EXECUTABLE"
+   echo ""
+   exit
+fi
+
 curl -X POST -H "Content-Type: application/json" -d @connector-data-orders.json http://localhost:8083/connectors

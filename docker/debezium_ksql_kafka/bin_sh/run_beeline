@@ -4,4 +4,18 @@ SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
 
 EXECUTABLE="`basename $0`"
 
+if [ "$HELP" == "true" ]; then
+cat <<EOF
+SYNOPSIS
+   ./$EXECUTABLE [-?]
+
+DESCRIPTION
+   Starts the Hive beeline client
+
+DEFAULT
+   ./$EXECUTABLE
+EOF
+   exit
+fi
+
 docker-compose exec hive  /bin/bash -c "\$HIVE_HOME/bin/beeline -u jdbc:hive2://localhost:10000"

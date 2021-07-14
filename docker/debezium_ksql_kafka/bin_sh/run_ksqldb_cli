@@ -9,8 +9,8 @@ cat <<EOF
 SYNOPSIS
    ./$EXECUTABLE [-?]
 
-DESCRIPTION"
-   Lists Kafka topics
+DESCRIPTION
+   Starts the ksqlDB client
 
 DEFAULT
    ./$EXECUTABLE
@@ -18,4 +18,5 @@ EOF
    exit
 fi
 
-docker run --rm --tty --network ${CLUSTER_NAME}_default confluentinc/cp-kafkacat kafkacat -b kafka:9092 -L |grep topic
+docker-compose exec ksqldb-cli ksql http://ksqldb-server:8088
+

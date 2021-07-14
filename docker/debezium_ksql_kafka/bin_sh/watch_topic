@@ -1,8 +1,36 @@
 #!/usr/bin/env bash
+SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
+. $SCRIPT_DIR/.addonenv.sh
+
+EXECUTABLE="`basename $0`"
+
+if [ "$HELP" == "true" ]; then
+cat <<EOF
+SYNOPSIS
+   ./$EXECUTABLE topic [-?]
+
+DESCRIPTION"
+   Watches topic messages
+
+OPTIONS
+   topic  Topic name.
+
+DEFAULT
+   ./$EXECUTABLE
+
+EXAMPLES
+   ./$EXECUTABLE dbserver1.nw.customers
+   ./$EXECUTABLE dbserver1.nw.orders
+
+SEE ALSO
+   list_topics(1)
+EOF
+   exit
+fi
 
 if [ "$1" == "" ]; then
    echo >&2 "ERROR: Topic is not specified. Command aborted."
    exit 1
 fi
 
-docker run --rm --tty --network debezium_ksql_kafka_default confluentinc/cp-kafkacat kafkacat -b kafka:9092 -t $1
+docker run --rm --tty --network ${CLUSTER_NAME}_default confluentinc/cp-kafkacat kafkacat -b kafka:9092 -t $1

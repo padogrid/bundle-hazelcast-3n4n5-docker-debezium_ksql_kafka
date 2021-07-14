@@ -26,9 +26,12 @@ if [[ ${OS_NAME} == CYGWIN* ]]; then
    export LOG_DIR="$(cygpath -wp "$LOG_DIR")"
 fi
 
+CLUSTER_NAME="$(basename $APP_DIR)"
+
 # Source in app specifics
 . $APP_DIR/bin_sh/setenv.sh
 
 # Log properties for log4j2. The log file name is set in executable scripts.
 JAVA_OPTS="$JAVA_OPTS -Dhazelcast.logging.type=log4j2 \
 -Dlog4j.configurationFile=$LOG_CONFIG_FILE"
+

@@ -1,3 +1,21 @@
 #!/usr/bin/env bash
+SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
+. $SCRIPT_DIR/.addonenv.sh
 
-docker exec -e MYSQL_PWD=debezium -it debezium_ksql_kafka_mysql_1 /bin/bash -c "mysql -uroot"
+EXECUTABLE="`basename $0`"
+
+if [ "$HELP" == "true" ]; then
+cat <<EOF
+SYNOPSIS
+   ./$EXECUTABLE [-?]
+
+DESCRIPTION
+   Starts the MSQL client
+
+DEFAULT
+   ./$EXECUTABLE
+EOF
+   exit
+fi
+
+docker exec -e MYSQL_PWD=debezium -it ${CLUSTER_NAME}_mysql_1 /bin/bash -c "mysql -uroot"

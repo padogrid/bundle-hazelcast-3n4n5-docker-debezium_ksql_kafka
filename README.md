@@ -1,6 +1,6 @@
 # Debezium-KSQL-Kafka Hazelcast Connector
 
-This bundle integrates Hazelcast with Debezium and Confluent KSQL for ingesting initial data and CDC records from MySQL into a Hazelcast cluster via a Kafka sink connector included in the `padogrid` distribution. It supports inserts, updates and deletes.
+This bundle integrates Hazelcast with Debezium and Confluent KSQL and ksqlDB for ingesting initial data and CDC records from MySQL into a Hazelcast cluster via a Kafka sink connector included in the `padogrid` distribution. It supports inserts, updates and deletes.
 
 ## Installing Bundle
 
@@ -14,30 +14,19 @@ install_bundle -download bundle-hazelcast-3n4-docker-debezium_ksql_kafka
 
 ## Use Case
 
-This use case ingests data changes made in the MySQL database into a Hazelcast cluster via Kafka connectors and also integrates Confluent KSQL for querying Kafka topics as external tables and views. It extends [the original Debezium-Kafka bundle](https://github.com/padogrid/bundle-hazelcast-3n4-docker-debezium_kafka) with Docker compose, Confluent KSQL, and  the North Wind mock data for `customers` and `orders` tables. It includes the MySQL source connector and the `hazelcast-addon` Debezium sink connectors.
+This use case ingests data changes made in the MySQL database into a Hazelcast cluster via Kafka connectors and also integrates Confluent KSQL for querying Kafka topics as streams and tables. It extends [the original Debezium-Kafka bundle](https://github.com/padogrid/bundle-hazelcast-3n4-docker-debezium_kafka) with Docker Compose, Confluent KSQL/ksqlDB, and the North Wind mock data for `customers` and `orders` tables. It includes the MySQL source connector and the `hazelcast-addon` Debezium sink connectors.
 
 ![Debezium-Ksql-Kafka Diagram](images/debezium-ksql-kafka.jpg)
 
 ## Required Software
 
-- PadoGrid 0.9.3-SNAPSHOT+ (08/10/2020)
 - Docker
 - Docker Compose
 - Maven 3.x
 
-## Optional Software
-
-- jq
-
-## Debezium Tutorial
-
-This demo has been put together based on the following blog from Debezium:
-
-[https://debezium.io/blog/2018/05/24/querying-debezium-change-data-eEvents-with-ksql/](https://debezium.io/blog/2018/05/24/querying-debezium-change-data-eEvents-with-ksql/)
-
 ## Building Demo
 
-We must first build the demo by running the `build_app` command as shown below. This command copies the Hazelcast and `hazelcast-addon-core` jar files to the Docker container mounted volume in the `padogrid` directory so that the Hazelcast Debezium Kafka connector can include them in its class path. It also downloads the ksql JDBC driver jar and its dependencies in the `padogrid/lib/jdbc` directory.
+We must first build the demo by running the `build_app` command as shown below. This command copies the Hazelcast and `hazelcast-addon` jar files to the Docker container mounted volume in the `padogrid` directory so that the Hazelcast Debezium Kafka connector can include them in its class path.
 
 ```bash
 cd_docker debezium_ksql_kafka; cd bin_sh
@@ -58,12 +47,12 @@ padogrid
 │   ├── hazelcast-client-4.xml
 │   └── hazelcast-client.xml
 ├── lib
-│   ├── hazelcast-addon-common-0.9.3-SNAPSHOT.jar
-│   ├── hazelcast-addon-core-3-0.9.3-SNAPSHOT.jar
-│   └── hazelcast-enterprise-all-3.12.9.jar
+│   ├── hazelcast-addon-common-0.9.8-SNAPSHOT.jar
+│   ├── hazelcast-addon-core-4-0.9.8-SNAPSHOT.jar
+│   └── hazelcast-enterprise-all-4.2.jar
 ├── log
 └── plugins
-    └── hazelcast-addon-core-3-0.9.3-SNAPSHOT-tests.jar
+    └── hazelcast-addon-core-4-0.9.8-SNAPSHOT-tests.jar
 ```
 
 ## Creating Hazelcast Docker Containers
@@ -159,11 +148,24 @@ docker-compose up
 
 ### 2. Start Debezium
 
+This bundle includes two (2) Docker Compose files. The default `docker-compose.yaml` file is for running KSQL and the `docker-compose-kdbsql.yaml` file is for running ksqlDB. **Run one of them as shown below.**
+
+**KSQL:**
+
 Start Zookeeper, Kafka, MySQL, Kafka Connect, Confluent KSQL containers:
 
 ```bash
 cd_docker debezium_ksql_kafka
 docker-compose up
+```
+
+**ksqlDB:**
+
+Start Zookeeper, Kafka, MySQL, Kafka Connect, Confluent ksqlDB containers:
+
+```bash
+cd_docker debezium_ksql_kafka
+docker-compose -f docker-compose-kdbsql.yaml up
 ```
 
 :exclamation: Wait till all the containers are up before executing the `init_all` script.
@@ -195,42 +197,70 @@ cd_app perf_test_ksql; cd bin_sh
 ./test_group -run -db -prop ../etc/group-factory-er.properties
 ```
 
-### 4. Run KSQL CLI
+### 4. Run KSQL/ksqlDB CLI
+
+If you started KSQL containers, i.e., `docker-compose.yaml`, then execute `run_ksql_cli` as shown below.
+
+**KSQL CLI:**
 
 ```
 cd_docker debezium_ksql_kafka; cd bin_sh
 ./run_ksql_cli
 ```
 
-KSQL processing by default starts with `latest` offsets. Set the KSQL processing to `earliest` offsets. 
+If you started ksqlDB containers, i.e., `docker-compose-ksqldb.yaml`, then execute `run_ksqldb_cli` as shown below.
+
+**ksqlDB CLI:**
+
+```
+cd_docker debezium_ksql_kafka; cd bin_sh
+./run_ksqldb_cli
+```
+
+KSQL/ksqlDB processing by default starts with `latest` offsets. Set the KSQL processing to `earliest` offsets. 
 
 ```sql
 SET 'auto.offset.reset' = 'earliest';
 ```
 
-Create and query `customers` stream
+#### 4.1. Create Streams
+
+Create the following streams:
+
+- `customers_from_debezium`
+- `orders_from_debezium`
 
 ```sql
 -- Create customers_from_debezium stream
 -- (payload struct <after:struct<customerid:string,address:string,city:string,companyname:string,contactname:string,contacttitle:string,country:string,fax:string,phone:string,postalcode:string,region:string>>)
-
+DROP STREAM IF EXISTS customers_from_debezium;
 CREATE STREAM customers_from_debezium \
-(customerid string,address string,city string,companyname string,contactname string,contacttitle string,country string,fax string,phone string,postalcode string,region string) \
+   (customerid string,address string,city string,companyname string,contactname string, \
+   contacttitle string,country string,fax string,phone string,postalcode string,region string) \
 WITH (KAFKA_TOPIC='dbserver1.nw.customers',VALUE_FORMAT='json');
 
 -- Create orders_from_debezium stream
 -- (payload struct <after:struct<orderid:string,customerid:string,employeeid:string,freight:double,orderdate:bigint,requireddate:bigint,shipaddress:string,shipcity:string,shiptcountry:string,shipname:string,shippostcal:string,shipregion:string,shipvia:string,shippeddate:string>>)
-
+DROP STREAM IF EXISTS orders_from_debezium;
 CREATE STREAM orders_from_debezium \
-(orderid string,customerid string,employeeid string,freight double,orderdate bigint,requireddate bigint,shipaddress string,shipcity string,shiptcountry string,shipname string,shippostcal string,shipregion string,shipvia string,shippeddate string) \
+   (orderid string,customerid string,employeeid string,freight double,orderdate bigint, \
+   requireddate bigint,shipaddress string,shipcity string,shiptcountry string,shipname string, \
+   shippostcal string,shipregion string,shipvia string,shippeddate string) \
 WITH (KAFKA_TOPIC='dbserver1.nw.orders',VALUE_FORMAT='json');
+```
 
--- Repartition
+Repartition streams.
 
-CREATE STREAM orders WITH (KAFKA_TOPIC='ORDERS_REPART',VALUE_FORMAT='json',PARTITIONS=1) as SELECT * FROM orders_from_debezium PARTITION BY orderid;
+```sql
+-- orders_stream
+DROP STREAM IF EXISTS orders_stream;
+CREATE STREAM orders_stream WITH (KAFKA_TOPIC='ORDERS_REPART',VALUE_FORMAT='json',PARTITIONS=1) \
+AS SELECT * FROM orders_from_debezium PARTITION BY orderid;
 
 -- customers_stream
-CREATE STREAM customers_stream WITH (KAFKA_TOPIC='CUSTOMERS_REPART',VALUE_FORMAT='json',PARTITIONS=1) as SELECT * FROM customers_from_debezium PARTITION BY customerid;
+DROP STREAM IF EXISTS customers_stream;
+CREATE STREAM customers_stream WITH (KAFKA_TOPIC='CUSTOMERS_REPART',VALUE_FORMAT='json',PARTITIONS=1) \
+AS SELECT * FROM customers_from_debezium PARTITION BY customerid;
 ```
 
 **Compare results: original vs. repartitioned**
@@ -261,7 +291,7 @@ Repartitioned Query:
 
 
 ```sql
-SELECT * FROM orders EMIT CHANGES LIMIT 1;
+SELECT * FROM orders_stream EMIT CHANGES LIMIT 1;
 ```
 
 Output:
@@ -280,14 +310,37 @@ Limit Reached
 Query terminated
 ```
 
-Join customers and orders
+#### 4.2. Create Tables
+
+**KSQL:**
+
+Create the `customers` table. Note the KEY and PRIMARY KEY keyword difference between KSQL and ksqkDB.
 
 ```sql
 -- Create customers table from the topic containing repartitioned customers
-CREATE TABLE customers (customerid string, contactname string, companyname string) WITH (KAFKA_TOPIC='CUSTOMERS_REPART',VALUE_FORMAT='json',KEY='customerid');
+DROP TABLE IF EXISTS customers;
+CREATE TABLE customers (customerid string, contactname string, companyname string) \
+WITH (KAFKA_TOPIC='CUSTOMERS_REPART',VALUE_FORMAT='json',KEY='customerid');
+```
 
+**ksqlDB:**
+
+```sql
+DROP TABLE IF EXISTS customers;
+CREATE TABLE customers (customerid string PRIMARY KEY, contactname string, companyname string) \
+WITH (KAFKA_TOPIC='CUSTOMERS_REPART',VALUE_FORMAT='json');
+```
+
+**Join Table and Stream:**
+
+Join `customers` and `orders_stream`, and emit changes.
+
+```sql
 -- Make a join between customer and its orders and create a query that monitors incoming orders
-SELECT customers.customerid,orderid,TIMESTAMPTOSTRING(orderdate, 'yyyy-MM-dd HH:mm:ss'),customers.contactname,customers.companyname,freight FROM orders left join customers on orders.customerid=customers.customerid EMIT CHANGES;
+SELECT customers.customerid,orderid,TIMESTAMPTOSTRING(orderdate, 'yyyy-MM-dd HH:mm:ss'), \
+   customers.contactname,customers.companyname,freight \
+FROM orders LEFT JOIN customers ON orders.customerid=customers.customerid \
+EMIT CHANGES;
 ```
 
 Output:
@@ -405,6 +458,10 @@ cd_app desktop; cd hazelcast-desktop_<version>/bin_sh
 cd_docker debezium_ksql_kafka
 docker-compose down
 
+# Or stop ksqlDB and Kafka containers
+cd_docker debezium_ksql_kafka
+docker-compose -f docker-compose-ksqldb.yaml down
+
 # Stop Hazelcast containers
 cd_docker hazelcast
 docker-compose down
@@ -416,3 +473,4 @@ docker-compose down
 2. Debizium-Kafka Hazelcast Connector, PadoGrid bundle, https://github.com/padogrid/bundle-hazelcast-3n4-docker-debezium_kafka 
 3. Debezium-Hive-Kafka Hazelcast Connector, Padogrid bundle, https://github.com/padogrid/bundle-hazelcast-3n4-docker-debezium_hive_kafka
 4. Confluent KSQL, GitHub, https://github.com/confluentinc/ksql
+5. ksqlDB Quickstart, https://ksqldb.io/quickstart.html

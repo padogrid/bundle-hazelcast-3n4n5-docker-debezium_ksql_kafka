@@ -4,4 +4,17 @@ SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
 
 EXECUTABLE="`basename $0`"
 
+if [ "$HELP" == "true" ]; then
+   echo "SYNOPSIS"
+   echo "   ./$EXECUTABLE [-?]"
+   echo ""
+   echo "DESCRIPTION"
+   echo "   Registers the MySQL Kafka source connector"
+   echo ""
+   echo "DEFAULT"
+   echo "   ./$EXECUTABLE"
+   echo ""
+   exit
+fi
+
 curl -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" localhost:8083/connectors/ -d @connector-mysql.json
