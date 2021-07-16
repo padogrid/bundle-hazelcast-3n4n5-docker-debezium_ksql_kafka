@@ -336,10 +336,10 @@ WITH (KAFKA_TOPIC='CUSTOMERS_REPART',VALUE_FORMAT='json');
 Join `customers` and `orders_stream`, and emit changes.
 
 ```sql
--- Make a join between customer and its orders and create a query that monitors incoming orders
+-- Make a join between customer and its orders_stream and create a query that monitors incoming orders_stream
 SELECT customers.customerid,orderid,TIMESTAMPTOSTRING(orderdate, 'yyyy-MM-dd HH:mm:ss'), \
    customers.contactname,customers.companyname,freight \
-FROM orders LEFT JOIN customers ON orders.customerid=customers.customerid \
+FROM orders_stream LEFT JOIN customers ON orders_stream.customerid=customers.customerid \
 EMIT CHANGES;
 ```
 
