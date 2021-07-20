@@ -399,7 +399,7 @@ The last command should display the connectors that we registered previously.
 The following scripts are provided to drop KSQL queries using the KSQL REST API.
 
 ```
-cd_app perf_test_ksql; cd bin_sh
+cd_docker debezium_ksql_kafka; cd bin_sh
 
 # Drop all queries
 ./ksql_drop_all_queries
