@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>padogrid.addon</groupId>
-	<artifactId>bundle-hazelcast-3n4-docker-debezium_ksql_kafka</artifactId>
+	<artifactId>bundle-hazelcast-3n4n5-docker-debezium_ksql_kafka</artifactId>
 	<packaging>pom</packaging>
         <name>${project.artifactId}</name>
 	<version>1.0.0</version>
