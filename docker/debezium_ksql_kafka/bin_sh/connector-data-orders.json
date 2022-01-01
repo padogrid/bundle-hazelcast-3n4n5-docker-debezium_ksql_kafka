@@ -3,7 +3,7 @@
         "connector.class": "org.hazelcast.addon.kafka.debezium.DebeziumKafkaSinkConnector",
         "tasks.max": "1",
         "topics": "dbserver1.nw.orders",
-	"hazelcast.enabled": "true",
+        "hazelcast.enabled": "true",
         "hazelcast.client.config": "/padogrid/etc/hazelcast-client.xml",
         "map": "nw/orders",
         "debug.enabled": true,
@@ -14,6 +14,8 @@
         "key.field.names": "orderId",
         "value.class": "org.hazelcast.demo.nw.data.Order",
         "value.column.names": "orderId, customerId, employeeId, freight, orderDate, requiredDate, shipAddress, shipCity, shipCountry, shipName, shipPostalCode, shipRegion, shipVia, shippedDate",
-        "value.field.names": "orderId, customerId, employeeId, freight, orderDate, requiredDate, shipAddress, shipCity, shipCountry, shipName, shipPostalCode, shipRegion, shipVia, shippedDate"
+        "value.field.names": "orderId, customerId, employeeId, freight, orderDate, requiredDate, shipAddress, shipCity, shipCountry, shipName, shipPostalCode, shipRegion, shipVia, shippedDate",
+        "key.converter.schemas.enable": false,
+        "value.converter.schemas.enable": false
      }
 }

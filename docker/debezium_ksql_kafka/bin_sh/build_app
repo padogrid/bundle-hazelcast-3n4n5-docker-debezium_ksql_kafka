@@ -53,8 +53,10 @@ else
       cp $HAZELCAST_HOME/lib/hazelcast-$HAZELCAST_MAJOR_VERSION_NUMBER*.jar padogrid/lib/
    fi
 fi
+cp $PADOGRID_HOME/lib/padogrid-common*.jar padogrid/lib/
 cp $PADOGRID_HOME/hazelcast/lib/hazelcast-addon-common*.jar padogrid/lib/
 cp $PADOGRID_HOME/hazelcast/lib/v$HAZELCAST_MAJOR_VERSION_NUMBER/hazelcast-addon-core*.jar padogrid/lib/
+# Test jars
 cp $PADOGRID_HOME/hazelcast/plugins/v$HAZELCAST_MAJOR_VERSION_NUMBER/hazelcast-addon-core*.jar padogrid/plugins/
 
 popd > /dev/null

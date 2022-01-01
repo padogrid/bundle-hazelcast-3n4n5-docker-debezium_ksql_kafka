@@ -29,6 +29,16 @@ This use case ingests data changes made in the MySQL database into a Hazelcast c
 
 :pencil2: This bundle builds the demo enviroment based on the Hazelcast and Management versions in your workspace. Make sure your workspace has been configured with the desired versions before building the demo environment.
 
+Before you begin, make sure you are in a Hazelcast product context by switching into a Hazelcast cluster. You can create a Hazelcast cluster if it does not exist as shown below.
+
+```bash
+# Create the default cluster named, 'myhz'
+make_cluster -product hazelcast
+
+# Switch to the 'myhz' cluster to set the product context
+switch_cluster myhz
+```
+
 We must first build the demo by running the `build_app` command as shown below. This command copies the Hazelcast and `hazelcast-addon` jar files to the Docker container mounted volume in the `padogrid` directory so that the Hazelcast Debezium Kafka connector can include them in its class path.
 
 ```bash
@@ -51,20 +61,22 @@ padogrid/
 │   ├── hazelcast-client-5.xml
 │   └── hazelcast-client.xml
 ├── lib
-│   ├── hazelcast-addon-common-0.9.12-SNAPSHOT.jar
-│   ├── hazelcast-addon-core-5-0.9.12-SNAPSHOT.jar
-│   └── hazelcast-jet-hadoop-all-5.0.jar
+│   ├── hazelcast-addon-common-0.9.13-SNAPSHOT.jar
+│   ├── hazelcast-addon-core-4-0.9.13-SNAPSHOT.jar
+│   ├── hazelcast-enterprise-all-4.2.2.jar
+│   └── padogrid-common-0.9.13-SNAPSHOT.jar
 ├── log
 └── plugins
-    └── hazelcast-addon-core-5-0.9.12-SNAPSHOT-tests.jar
+    └── hazelcast-addon-core-4-0.9.13-SNAPSHOT-tests.jar
 ```
+
 
 ## Creating Hazelcast Docker Containers
 
 Let's create a Hazelcast cluster to run on Docker containers as follows.
 
 ```bash
-create_docker -cluster hazelcast -host host.docker.internal
+create_docker -product hazelcast -cluster hazelcast -host host.docker.internal
 cd_docker hazelcast
 ```
 
@@ -141,7 +153,8 @@ Set user name and password as follows:
                 <property name="connection.password">dbz</property>
 ```
 
-## Starting Docker Containers
+
+## Startup Sequence
 
 ### 1. Start Hazelcast
 
@@ -221,7 +234,7 @@ cd_docker debezium_ksql_kafka; cd bin_sh
 ./run_ksqldb_cli
 ```
 
-KSQL/ksqlDB processing by default starts with `latest` offsets. Set the KSQL processing to `earliest` offsets. 
+The KSQL/ksqlDB processing by default starts with `latest` offsets. Set the KSQL/ksqlDB processing to `earliest` offsets. 
 
 ```sql
 SET 'auto.offset.reset' = 'earliest';
@@ -363,7 +376,7 @@ Output:
 ...
 ```
 
-### Watch topics
+### 5. Watch topics
 
 ```bash
 cd_docker debezium_ksql_kafka; cd bin_sh
@@ -371,14 +384,14 @@ cd_docker debezium_ksql_kafka; cd bin_sh
 ./watch_topic dbserver1.nw.orders
 ```
 
-### Run MySQL CLI
+### 6. Run MySQL CLI
 
 ```bash
 cd_docker debezium_ksql_kafka; cd bin_sh
 ./run_mysql_cli
 ```
 
-### Check Kafka Connect
+### 7. Check Kafka Connect
 
 ```bash
 # Check status
@@ -398,9 +411,9 @@ The last command should display the connectors that we registered previously.
 ]
 ```
 
-### Drop KSQL Statements
+### 8. Drop KSQL/ksqlDB Statements
 
-The following scripts are provided to drop KSQL queries using the KSQL REST API.
+The following scripts are provided to drop KSQL/ksqlDB queries using the KSQL/ksqlDB REST API.
 
 ```
 cd_docker debezium_ksql_kafka; cd bin_sh
@@ -415,7 +428,7 @@ cd_docker debezium_ksql_kafka; cd bin_sh
 ./ksql_drop_all_tables
 ```
 
-### View Map Contents
+### 9. View Map Contents
 
 To view the map contents, run the `read_cache` command as follows:
 
@@ -436,7 +449,7 @@ cd_app perf_test_ksql; cd bin_sh
 ...
 ```
 
-### Desktop
+### 10. Desktop
 
 You can also install the desktop app, browse and query the map contents. The `build_app` script configures and deploys all the necessary files for this demo.
 
