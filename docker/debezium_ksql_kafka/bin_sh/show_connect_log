@@ -18,5 +18,4 @@ EOF
    exit
 fi
 
-docker-compose exec connect /bin/bash -c "tail -f /kafka/logs/connect-service.log"
-
+docker-compose logs -f connect
