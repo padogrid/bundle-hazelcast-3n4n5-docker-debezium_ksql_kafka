@@ -4,6 +4,8 @@ This bundle integrates Hazelcast with Debezium and Confluent KSQL and ksqlDB for
 
 ## Installing Bundle
 
+![PadoGrid](https://github.com/padogrid/padogrid/raw/develop/images/padogrid-3d-16x16.png) [*Driven by PadoGrid*](https://github.com/padogrid)
+
 This bundle supports Hazelcast 3.12.x, 4.x, and 5.x.
 
 ```bash
