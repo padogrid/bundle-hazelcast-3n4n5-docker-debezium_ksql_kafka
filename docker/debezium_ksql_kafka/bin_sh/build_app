@@ -6,7 +6,7 @@ EXECUTABLE="`basename $0`"
 
 if [ "$HELP" == "true" ]; then
    echo "Usage:"
-   echo "   ./$EXECUTABLE [-clean] [-?]"
+   echo "   ./$EXECUTABLE [-?]"
    echo ""
    echo "   Copies the hazelcast jar files to the 'padogrid' directory which is mounted"
    echo "   by the Docker Hazelcast connector container."
@@ -33,9 +33,13 @@ cp  padogrid/etc/hazelcast-client-${HAZELCAST_MAJOR_VERSION_NUMBER}.xml padogrid
 # Copy the hazelcast and hazelcast-addon jar files
 if [ ! -d padogrid/lib ]; then
    mkdir -p padogrid/lib
+else
+   rm -r padogrid/lib/*
 fi
 if [ ! -d padogrid/plugins ]; then
    mkdir -p padogrid/plugins
+else
+   rm -r padogrid/plugins/*
 fi
 if [ ! -d padogrid/log ]; then
    mkdir -p padogrid/log

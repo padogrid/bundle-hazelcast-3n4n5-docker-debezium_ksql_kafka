@@ -26,7 +26,6 @@ This use case ingests data changes made in the MySQL database into a Hazelcast c
 - Docker
 - Docker Compose
 - Maven 3.x
-- PadoGrid 0.9.12-SNAPSHOT+ (10/18/2021) - for Hazelcast 5.x only
 
 ## Building Demo
 
@@ -64,15 +63,14 @@ padogrid/
 │   ├── hazelcast-client-5.xml
 │   └── hazelcast-client.xml
 ├── lib
-│   ├── hazelcast-addon-common-0.9.13-SNAPSHOT.jar
-│   ├── hazelcast-addon-core-4-0.9.13-SNAPSHOT.jar
-│   ├── hazelcast-enterprise-all-4.2.2.jar
-│   └── padogrid-common-0.9.13-SNAPSHOT.jar
+│   ├── hazelcast-addon-common-0.9.27.jar
+│   ├── hazelcast-addon-core-5-0.9.27.jar
+│   ├── hazelcast-enterprise-5.3.1.jar
+│   └── padogrid-common-0.9.27.jar
 ├── log
 └── plugins
-    └── hazelcast-addon-core-4-0.9.13-SNAPSHOT-tests.jar
+    └── hazelcast-addon-core-5-0.9.27-tests.jar
 ```
-
 
 ## Creating Hazelcast Docker Containers
 
@@ -454,18 +452,16 @@ cd_app perf_test_ksql; cd bin_sh
 
 ### 10. Desktop
 
-You can also install the desktop app, browse and query the map contents. The `build_app` script configures and deploys all the necessary files for this demo.
+You can also install the desktop app and query the map contents.
 
 ```bash
 create_app -app desktop
-cd_app desktop; cd bin_sh
-./build_app
 ```
 
 Run the desktop and login with your user ID and the default locator of `localhost:5701`. Password is not required.
 
 ```bash
-cd_app desktop; cd hazelcast-desktop_<version>/bin_sh
+cd_app desktop/bin_sh
 ./desktop
 ```
 
