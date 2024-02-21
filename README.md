@@ -39,7 +39,7 @@ Before you begin, make sure you are in a Hazelcast product context by switching 
 
 ```bash
 # Create the default cluster named, 'myhz'
-make_cluster -product hazelcast
+create_cluster -product hazelcast
 
 # Switch to the 'myhz' cluster to set the product context
 switch_cluster myhz
