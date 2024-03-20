@@ -27,6 +27,7 @@ workspace.code-workspace
 .addonenv.sh
 initenv.sh
 setenv.sh
+vmenv.sh
 apps
 bundles
 clusters

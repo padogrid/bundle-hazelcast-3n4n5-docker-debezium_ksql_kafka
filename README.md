@@ -3,7 +3,7 @@
 ---
 
 <!-- Platforms -->
-[![Host OS](https://github.com/padogrid/padogrid/wiki/images/padogrid-host-os.drawio.svg)](https://github.com/padogrid/padogrid/wiki/Platform-Host-OS)
+[![PadoGrid 1.x](https://github.com/padogrid/padogrid/wiki/images/padogrid-padogrid-1.x.drawio.svg)](https://github.com/padogrid/padogrid/wiki/Platform-PadoGrid-1.x) [![Host OS](https://github.com/padogrid/padogrid/wiki/images/padogrid-host-os.drawio.svg)](https://github.com/padogrid/padogrid/wiki/Platform-Host-OS) [![Docker](https://github.com/padogrid/padogrid/wiki/images/padogrid-docker.drawio.svg)](https://github.com/padogrid/padogrid/wiki/Platform-Docker) 
 
 # Debezium-KSQL-Kafka Hazelcast Connector
 
@@ -17,7 +17,8 @@ This bundle supports Hazelcast 3.12.x, 4.x, and 5.x.
 install_bundle -download bundle-hazelcast-3n4n5-docker-debezium_ksql_kafka
 ```
 
-:exclamation: If you are running this demo on WSL, make sure your workspace is on a shared folder. The Docker volume it creates will not be visible otherwise.
+❗ If you are running this bundle on WSL, make sure your workspace is on a shared folder. The Docker volume it creates will not be visible outside of WSL otherwise.
+
 
 ## Use Case
 
@@ -28,12 +29,12 @@ This use case ingests data changes made in the MySQL database into a Hazelcast c
 ## Required Software
 
 - Docker
-- Docker Compose
 - Maven 3.x
+- Hazelcast 3.12.x, 4.x, or 5.x
 
 ## Building Demo
 
-:pencil2: This bundle builds the demo enviroment based on the Hazelcast and Management versions in your workspace. Make sure your workspace has been configured with the desired versions before building the demo environment.
+✏️  This bundle builds the demo enviroment based on the Hazelcast and Management versions in your workspace. Make sure your workspace has been configured with the desired versions before building the demo environment.
 
 Before you begin, make sure you are in a Hazelcast product context by switching into a Hazelcast cluster. You can create a Hazelcast cluster if it does not exist as shown below.
 
@@ -48,7 +49,7 @@ switch_cluster myhz
 We must first build the demo by running the `build_app` command as shown below. This command copies the Hazelcast and `hazelcast-addon` jar files to the Docker container mounted volume in the `padogrid` directory so that the Hazelcast Debezium Kafka connector can include them in its class path.
 
 ```bash
-cd_docker debezium_ksql_kafka; cd bin_sh
+cd_docker debezium_ksql_kafka/bin_sh
 ./build_app
 ```
 
@@ -60,20 +61,28 @@ tree padogrid
 ```
 
 ```console
-padogrid/
+padogrid
 ├── etc
 │   ├── hazelcast-client-3.xml
 │   ├── hazelcast-client-4.xml
 │   ├── hazelcast-client-5.xml
 │   └── hazelcast-client.xml
 ├── lib
-│   ├── hazelcast-addon-common-0.9.27.jar
-│   ├── hazelcast-addon-core-5-0.9.27.jar
-│   ├── hazelcast-enterprise-5.3.1.jar
-│   └── padogrid-common-0.9.27.jar
+│   ├── hazelcast-addon-common-1.0.0.jar
+│   ├── hazelcast-addon-core-5-1.0.0.jar
+│   ├── hazelcast-enterprise-5.3.6.jar
+│   └── padogrid-common-1.0.0.jar
 ├── log
 └── plugins
-    └── hazelcast-addon-core-5-0.9.27-tests.jar
+    └── hazelcast-addon-core-5-1.0.0-tests.jar
+```
+
+## Creating `my_network`
+
+Let's create the `my_network` network to which all containers will join.
+
+```bash
+docker network create my_network
 ```
 
 ## Creating Hazelcast Docker Containers
@@ -81,45 +90,10 @@ padogrid/
 Let's create a Hazelcast cluster to run on Docker containers as follows.
 
 ```bash
-create_docker -product hazelcast -cluster hazelcast -host host.docker.internal
-cd_docker hazelcast
+create_docker -product hazelcast -cluster hazelcast -network my_network
 ```
 
-If you are running Docker Desktop, then the host name, `host.docker.internal`, is accessible from the containers as well as the host machine. You can run the `ping` command to check the host name.
-
-```bash
-ping host.docker.internal
-```
-
-If `host.docker.internal` is not defined then you will need to use the host IP address that can be accessed from both the Docker containers and the host machine. Run `create_docker -?` or `man create_docker` to see the usage.
-
-```bash
-create_docker -?
-```
-
-If you are using a host IP other than `host.docker.internal` then you must also make the change in the Debezium Hazelcast connector configuration file as follows.
-
-```bash
-cd_docker debezium_ksql_kafka
-vi padogrid/etc/hazelcast-client.xml
-```
-
-Replace `host.docker.internal` in `hazelcast-client.xml` with your host IP address.
-
-```xml
-<hazelcast-client ...>
-   ...
-   <network>
-      <cluster-members>
-         <address>host.docker.internal:5701</address>
-         <address>host.docker.internal:5702</address>
-      </cluster-members>
-   </network>
-   ...
-</hazelcast-client>
-```
-
-If you will be running the Desktop app then you also need to register the `org.hazelcast.demo.nw.data.PortableFactoryImpl` class in the Hazelcast cluster. The `Customer` and `Order` classes implement the `VersionedPortable` interface.
+If you will be running the [Hazelcast Desktop](#10-hazelcast-desktop) app then you need to register the `org.hazelcast.demo.nw.data.PortableFactoryImpl` class in the Hazelcast cluster. The `Customer` and `Order` classes implement the `VersionedPortable` interface.
 
 ```bash
 cd_docker hazelcast
@@ -139,8 +113,8 @@ Add the following in the `hazelcast.xml` file.
 Create and build `perf_test` for ingesting mock data into MySQL:
 
 ```bash
-create_app -app perf_test -name perf_test_ksql
-cd_app perf_test_ksql; cd bin_sh
+create_app -product hazelcast -app perf_test -name perf_test_ksql
+cd_app perf_test_ksql/bin_sh
 ./build_app
 ```
 
@@ -165,12 +139,24 @@ Set user name and password as follows:
 
 ```bash
 cd_docker hazelcast
-docker-compose up
+docker compose up -d
+```
+
+#### 1.1. View Management Center
+
+**URL:** http://localhost:8080/hazelcast-mancenter
+
+If the managenment center prompts for adding a cluster config then make sure to enter the following.
+
+```console
+Cluster Name: dev
+Cluster Config State: Enabled
+Member Addresses: localhost (or your host os address)
 ```
 
 ### 2. Start Debezium
 
-This bundle includes two (2) Docker Compose files. The default `docker-compose.yaml` file is for running KSQL and the `docker-compose-kdbsql.yaml` file is for running ksqlDB. **Run one of them as shown below.**
+This bundle includes two (2) Docker Compose files. The default `docker-compose.yaml` file is for running KSQL and the `docker-compose-ksqldb.yaml` file is for running ksqlDB. **Run one of them as shown below.**
 
 **KSQL:**
 
@@ -178,7 +164,7 @@ Start Zookeeper, Kafka, MySQL, Kafka Connect, Confluent KSQL containers:
 
 ```bash
 cd_docker debezium_ksql_kafka
-docker-compose up
+docker compose up -d
 ```
 
 **ksqlDB:**
@@ -187,24 +173,24 @@ Start Zookeeper, Kafka, MySQL, Kafka Connect, Confluent ksqlDB containers:
 
 ```bash
 cd_docker debezium_ksql_kafka
-docker-compose -f docker-compose-kdbsql.yaml up
+docker compose -f docker-compose-ksqldb.yaml up -d
 ```
 
-:exclamation: Wait till all the containers are up before executing the `init_all` script.
+❗ Wait till all the containers are up before executing the `init_all` script.
 
 Execute `init_all` which performs the following:
 
 - Create the `nw` database and grant all privileges to the user `debezium`:
 
 ```bash
-cd_docker debezium_ksql_kafka; cd bin_sh
+cd_docker debezium_ksql_kafka/bin_sh
 ./init_all
 ```
 
 There are three (3) Kafka connectors that we need to register. The MySQL connector is provided by Debezium and the data connectors are part of the PadoGrid distribution. 
 
 ```bash
-cd_docker debezium_ksql_kafka; cd bin_sh
+cd_docker debezium_ksql_kafka/bin_sh
 ./register_connector_mysql
 ./register_connector_data_customers
 ./register_connector_data_orders
@@ -215,7 +201,7 @@ cd_docker debezium_ksql_kafka; cd bin_sh
 Note that if you run the following more than once then you may see multiple customers sharing the same customer ID when you execute KSQL queries on streams since the streams keep all the CDC records. The database (MySQL), on the other hand, will always have a single customer per customer ID.
 
 ```bash
-cd_app perf_test_ksql; cd bin_sh
+cd_app perf_test_ksql/bin_sh
 ./test_group -run -db -prop ../etc/group-factory-er.properties
 ```
 
@@ -226,7 +212,7 @@ If you started KSQL containers, i.e., `docker-compose.yaml`, then execute `run_k
 **KSQL CLI:**
 
 ```
-cd_docker debezium_ksql_kafka; cd bin_sh
+cd_docker debezium_ksql_kafka/bin_sh
 ./run_ksql_cli
 ```
 
@@ -235,7 +221,7 @@ If you started ksqlDB containers, i.e., `docker-compose-ksqldb.yaml`, then execu
 **ksqlDB CLI:**
 
 ```
-cd_docker debezium_ksql_kafka; cd bin_sh
+cd_docker debezium_ksql_kafka/bin_sh
 ./run_ksqldb_cli
 ```
 
@@ -384,7 +370,7 @@ Output:
 ### 5. Watch topics
 
 ```bash
-cd_docker debezium_ksql_kafka; cd bin_sh
+cd_docker debezium_ksql_kafka/bin_sh
 ./watch_topic dbserver1.nw.customers
 ./watch_topic dbserver1.nw.orders
 ```
@@ -392,7 +378,7 @@ cd_docker debezium_ksql_kafka; cd bin_sh
 ### 6. Run MySQL CLI
 
 ```bash
-cd_docker debezium_ksql_kafka; cd bin_sh
+cd_docker debezium_ksql_kafka/bin_sh
 ./run_mysql_cli
 ```
 
@@ -421,7 +407,7 @@ The last command should display the connectors that we registered previously.
 The following scripts are provided to drop KSQL/ksqlDB queries using the KSQL/ksqlDB REST API.
 
 ```
-cd_docker debezium_ksql_kafka; cd bin_sh
+cd_docker debezium_ksql_kafka/bin_sh
 
 # Drop all queries
 ./ksql_drop_all_queries
@@ -438,7 +424,7 @@ cd_docker debezium_ksql_kafka; cd bin_sh
 To view the map contents, run the `read_cache` command as follows:
 
 ```bash
-cd_app perf_test_ksql; cd bin_sh
+cd_app perf_test_ksql/bin_sh
 ./read_cache nw/customers
 ./read_cache nw/orders
 ```
@@ -454,12 +440,12 @@ cd_app perf_test_ksql; cd bin_sh
 ...
 ```
 
-### 10. Desktop
+### 10. Hazelcast Desktop
 
 You can also install the desktop app and query the map contents.
 
 ```bash
-create_app -app desktop
+create_app -product hazelcast -app desktop
 ```
 
 Run the desktop and login with your user ID and the default locator of `localhost:5701`. Password is not required.
@@ -476,15 +462,21 @@ cd_app desktop/bin_sh
 ```bash
 # Stop KSQL and Kafka containers
 cd_docker debezium_ksql_kafka
-docker-compose down
+docker compose down
 
 # Or stop ksqlDB and Kafka containers
 cd_docker debezium_ksql_kafka
-docker-compose -f docker-compose-ksqldb.yaml down
+docker compose -f docker-compose-ksqldb.yaml down
 
 # Stop Hazelcast containers
 cd_docker hazelcast
-docker-compose down
+docker compose down
+
+# Remove my_network
+docker network rm my_network
+
+# Prune all stopped containers 
+docker container prune
 ```
 
 ## References
