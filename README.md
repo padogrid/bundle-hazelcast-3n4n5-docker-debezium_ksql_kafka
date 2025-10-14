@@ -11,6 +11,8 @@ This bundle integrates Hazelcast with Debezium and Confluent KSQL and ksqlDB for
 
 ## Installing Bundle
 
+✏️  *Please see [Installing Bundles](https://github.com/padogrid/padogrid/wiki/Installing-Bundles) for instructions on how to install bundles and their required software.*
+
 This bundle supports Hazelcast 3.12.x, 4.x, and 5.x.
 
 ```bash
@@ -18,7 +20,6 @@ install_bundle -download bundle-hazelcast-3n4n5-docker-debezium_ksql_kafka
 ```
 
 ❗ If you are running this bundle on WSL, make sure your workspace is on a shared folder. The Docker volume it creates will not be visible outside of WSL otherwise.
-
 
 ## Use Case
 
